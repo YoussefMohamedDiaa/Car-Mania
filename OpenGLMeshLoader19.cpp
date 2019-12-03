@@ -2,6 +2,8 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
+#include <mmsystem.h>
+#include <Windows.h>
 
 int WIDTH = 1280;
 int HEIGHT = 720;
@@ -404,6 +406,7 @@ void keyboardFunc(int key, int x, int y) {
 			//forward += 1;
 			//break;
 		case GLUT_KEY_LEFT:
+			//mciSendString("play \"\car.wav\"", NULL, 0, NULL);
 			sideMove -= 0.1;
 			sideAngle = 10;
 			break;
@@ -430,7 +433,8 @@ void main(int argc, char** argv)
 	glutCreateWindow(title);
 
 	glutDisplayFunc(myDisplay);
-
+	
+	PlaySound(TEXT("car.wav"), NULL, SND_ASYNC | SND_LOOP);
 
 
 	//glutKeyboardFunc(myKeyboard);
