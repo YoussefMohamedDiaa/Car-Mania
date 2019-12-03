@@ -20,6 +20,13 @@ double forward = 0;
 double sideMove = 0;
 double sideAngle = 0;
 
+double downfp = 0;
+double forwardfp = 0;
+double upFp = 0;
+double rightFp = 0;
+double eyeFp = 0;
+
+
 int ground1Far = -120;
 int ground1Near = 20;
 int ground2Far = 20;
@@ -27,6 +34,7 @@ int ground2Near = 160;
 
 bool nextDone = false;
 bool nextDone2 = false;
+bool fp = false;
 class Vector
 {
 public:
@@ -57,6 +65,7 @@ Model_3DS model_tree;
 
 // Textures
 GLTexture tex_ground;
+GLTexture car_view;
 
 //=======================================================================
 // Lighting Configuration Function
@@ -149,6 +158,75 @@ void myInit(void)
 //=======================================================================
 // Render Ground Function
 //=======================================================================
+
+void RenderCarView()
+{
+
+	glPushMatrix();
+	glTranslated(0 + sideMove, 0, 0 - forward);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1, 1, 0, 0.7);
+	glBegin(GL_QUADS);
+	glVertex3f(5, 0.5, -0.2);
+	glVertex3f(5, 0.5, -0.2);
+	glVertex3f(2.7, 0.1, -4);
+	glVertex3f(5.5, 0.1, -4);
+	glEnd();
+
+	glBegin(GL_QUADS);
+	glVertex3f(5.8-0.2, 0.5, -0.2);
+	glVertex3f(5.8 - 0.2, 0.5, -0.2);
+	glVertex3f(5.5 - 0.2, 0.1, -4);
+	glVertex3f(8.3 - 0.2, 0.1, -4);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslated(0 + sideMove, 0, 0 - forward);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(0, 0, 0, 0.2);
+	glBegin(GL_QUADS);
+	glVertex3f(-10, 0, -1);
+	glVertex3f(10,0, -1);
+	glVertex3f(10, 7, -1);
+	glVertex3f(-10, 7, -1);
+	glEnd();
+	glPopMatrix();
+
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, car_view.texture[0]);	// Bind the ground texture
+
+	glPushMatrix();
+	glTranslated(0 + sideMove, 0, 0 - forward);
+	glTranslated(4.77, 0.4, 0);
+	glScaled(0.45, 0.12, 0.5);
+	glBegin(GL_QUADS);
+	glDisable(GL_REPEAT);
+	glNormal3f(0, 0, 1);	// Set quad normal direction.
+	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
+	glVertex3f(0, 0, 0);
+	glTexCoord2f(1, 0);
+	glVertex3f(2, 0,0);
+	glTexCoord2f(1, 1);
+	glVertex3f(2, 2,0);
+	glTexCoord2f(0, 1);
+	glVertex3f(0, 2,0);
+	glEnd();
+	glPopMatrix();
+
+
+	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+
+	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+}
+
 void RenderGround()
 {
 	glDisable(GL_LIGHTING);	// Disable lighting 
@@ -167,7 +245,7 @@ void RenderGround()
 	glTexCoord2f(5, 0);
 	glVertex3f(20, 0, ground1Far);
 	glTexCoord2f(5, 5);
-	glVertex3f(20, 0, ground1Near );
+	glVertex3f(20, 0, ground1Near);
 	glTexCoord2f(0, 5);
 	glVertex3f(-20, 0, ground1Near);
 	glEnd();
@@ -220,13 +298,13 @@ void setupCamera() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5+sideMove, 1.5,3.5 - forward, 5+sideMove, 0, 0.0-forward, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove+ eyeFp, 1.5-downfp, 3.5 - forward-forwardfp, 5 + sideMove+rightFp, 0+ upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 }
 void myDisplay(void)
 {
 
 	setupCamera();
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -240,20 +318,23 @@ void myDisplay(void)
 
 	RenderGround();
 	RenderGround2();
+	if(fp)
+	RenderCarView();
 	// Draw house Model
 
-	
+
 	glPushMatrix();
-	glTranslated(-0.5+sideMove, 0, 0-forward);
+	glTranslated(-0.5 + sideMove, 0, 0 - forward);
 	glTranslated(5, 0, 0);
 	glRotated(-90, 0, 1, 0);
 	glRotated(sideAngle, 0, 1, 0);
 	glTranslated(-5, 0, 0);
-	model_house.Draw();
+	if(!fp)
+	 model_house.Draw();
 	glPopMatrix();
 
 
-	
+
 
 	glutSwapBuffers();
 }
@@ -347,7 +428,7 @@ void myReshape(int w, int h)
 	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5 + sideMove, 1.5, 3.5 - forward, 5 + sideMove, 0, 0.0 - forward, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove+eyeFp, 1.5-downfp, 3.5 - forward- forwardfp, 5 + sideMove+rightFp, 0+ upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 }
 
 
@@ -363,6 +444,7 @@ void LoadAssets()
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
+	car_view.Load("Textures/carView.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
@@ -372,47 +454,64 @@ void LoadAssets()
 
 void Anim()
 {
-	if(sideAngle>0)
-	sideAngle -= 0.02;
-	else if(sideAngle < 0)
-	sideAngle += 0.02;
+
+	if (fp) {
+
+		 downfp = 0.7;
+		 forwardfp = 2.8;
+		 upFp = 0.8;
+		 rightFp = 0.16;
+		 eyeFp = 0.1;
+	}
+	else {
+		downfp = 0;
+		forwardfp = 0;
+		upFp = 0;
+		rightFp = 0;
+		eyeFp = 0;
+	}
+
+	if (sideAngle > 0)
+		sideAngle -= 0.02;
+	else if (sideAngle < 0)
+		sideAngle += 0.02;
 
 
 	angleView += 0.1;
 	forward += 0.5;
-	
-	if (-forward < ground1Far+100 && -forward > ground1Far ) {
+
+	if (-forward < ground1Far + 100 && -forward > ground1Far) {
 		ground2Far = ground1Far - 140;
-		ground2Near = ground1Far ;
-	
+		ground2Near = ground1Far;
+
 	}
-	else if (-forward < ground2Far+100 && -forward > ground2Far) {
+	else if (-forward < ground2Far + 100 && -forward > ground2Far) {
 		ground1Far = ground2Far - 140;
 		ground1Near = ground2Far;
-		
+
 	}
 	glutPostRedisplay();
 }
 
 void keyboardFunc(int key, int x, int y) {
 
-		switch (key) {
-		//case GLUT_KEY_DOWN:
-			//forward -= 1;
-			//break;
-		//case GLUT_KEY_UP:
-			//forward += 1;
-			//break;
-		case GLUT_KEY_LEFT:
-			sideMove -= 0.1;
-			sideAngle = 10;
+	switch (key) {
+    case GLUT_KEY_UP:
+		fp = true;
 			break;
-		case GLUT_KEY_RIGHT:
-			sideMove += 0.1;
-			sideAngle = -10;
-			break;
-		}
-	
+	case GLUT_KEY_DOWN:
+		fp = false;
+		break;
+	case GLUT_KEY_LEFT:
+		sideMove -= 0.1;
+		sideAngle = 10;
+		break;
+	case GLUT_KEY_RIGHT:
+		sideMove += 0.1;
+		sideAngle = -10;
+		break;
+	}
+
 }
 
 
