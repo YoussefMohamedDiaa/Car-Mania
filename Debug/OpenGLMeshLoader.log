@@ -1,5 +1,6 @@
 ﻿  OpenGLMeshLoader19.cpp
-C:\Users\Eng.Yousef\Desktop\OpenGLMeshLoader19 - sky\OpenGLMeshLoader19 - sky\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\Eng.Yousef\Desktop\OpenGLMeshLoader19 - sky\OpenGLMeshLoader19 - sky\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Mohamed A. Abu Atala\Car-Mania\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Mohamed A. Abu Atala\Car-Mania\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(86,17): warning C4129: 'c': unrecognized character escape sequence
 GLTexture.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
-  OpenGLMeshLoader.vcxproj -> C:\Users\Eng.Yousef\Desktop\OpenGLMeshLoader19 - sky\OpenGLMeshLoader19 - sky\Debug\OpenGLMeshLoader19.exe
+  OpenGLMeshLoader.vcxproj -> C:\Users\Mohamed A. Abu Atala\Car-Mania\Debug\OpenGLMeshLoader19.exe

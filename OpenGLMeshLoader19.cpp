@@ -2,8 +2,6 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
-#include <mmsystem.h>
-#include <Windows.h>
 
 int WIDTH = 1280;
 int HEIGHT = 720;
@@ -28,11 +26,21 @@ double upFp = 0;
 double rightFp = 0;
 double eyeFp = 0;
 
+double carMinX = 0.0;
+double carMaxX = 0.0;
+double carMinY = 0.0;
+double carMaxY = 0.0;
+double carMinZ = 0.0;
+double carMaxZ = 0.0;
+
+int crashCount = 0; //might change it to long
 
 int ground1Far = -120;
 int ground1Near = 20;
 int ground2Far = 20;
 int ground2Near = 160;
+
+int printCount = 0;
 
 bool nextDone = false;
 bool nextDone2 = false;
@@ -62,12 +70,24 @@ Vector Up(0, 1, 0);
 int cameraZoom = 0;
 
 // Model Variables
-Model_3DS model_house;
+Model_3DS model_car;
 Model_3DS model_tree;
+Model_3DS model_building;
+Model_3DS model_building2;
+Model_3DS model_barrier;
+Model_3DS model_chair;
 
 // Textures
 GLTexture tex_ground;
 GLTexture car_view;
+
+void checkCrash(int coneNum, double x, double z) {
+	if (x + 0.2 <= carMaxX && x >= carMinX && z <= carMaxZ && z >= carMinZ) {
+		mciSendString("play \"\crash.wav\"", NULL, 0, NULL);
+		//printf("crashed %d\n", ++crashCount);
+		//printf("cone: %d\n", coneNum);
+	}
+}
 
 //=======================================================================
 // Lighting Configuration Function
@@ -157,10 +177,8 @@ void myInit(void)
 	glEnable(GL_NORMALIZE);
 }
 
-//=======================================================================
-// Render Ground Function
-//=======================================================================
 
+//for first person
 void RenderCarView()
 {
 
@@ -175,9 +193,10 @@ void RenderCarView()
 	glVertex3f(2.7, 0.1, -4);
 	glVertex3f(5.5, 0.1, -4);
 	glEnd();
+	//printf("%f %f\n", 2.7+sideMove + 0.5, 5.5+sideMove + 0.5);
 
 	glBegin(GL_QUADS);
-	glVertex3f(5.8-0.2, 0.5, -0.2);
+	glVertex3f(5.8 - 0.2, 0.5, -0.2);
 	glVertex3f(5.8 - 0.2, 0.5, -0.2);
 	glVertex3f(5.5 - 0.2, 0.1, -4);
 	glVertex3f(8.3 - 0.2, 0.1, -4);
@@ -191,7 +210,7 @@ void RenderCarView()
 	glColor4f(0, 0, 0, 0.2);
 	glBegin(GL_QUADS);
 	glVertex3f(-10, 0, -1);
-	glVertex3f(10,0, -1);
+	glVertex3f(10, 0, -1);
 	glVertex3f(10, 7, -1);
 	glVertex3f(-10, 7, -1);
 	glEnd();
@@ -215,11 +234,11 @@ void RenderCarView()
 	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
 	glVertex3f(0, 0, 0);
 	glTexCoord2f(1, 0);
-	glVertex3f(2, 0,0);
+	glVertex3f(2, 0, 0);
 	glTexCoord2f(1, 1);
-	glVertex3f(2, 2,0);
+	glVertex3f(2, 2, 0);
 	glTexCoord2f(0, 1);
-	glVertex3f(0, 2,0);
+	glVertex3f(0, 2, 0);
 	glEnd();
 	glPopMatrix();
 
@@ -230,7 +249,80 @@ void RenderCarView()
 }
 
 void RenderGround()
-{
+{	
+	int cur = 20;
+	for (int i = 0; i < 10; i++) {
+		glPushMatrix();
+		glTranslated(-2, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(3, -2, ground1Far + cur);
+
+		glPushMatrix();
+		glTranslated(-3, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(2, -3, ground1Far + cur);
+
+		glPushMatrix();
+		glTranslated(-4, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(1, -4, ground1Far + cur);
+
+		cur += 20;
+	}
+
+	cur = 10;
+	for (int i = 0; i < 10; i++) {
+		glPushMatrix();
+		glTranslated(2, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(4, 2, ground1Far + cur);
+
+		glPushMatrix();
+		glTranslated(3, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(5, 3, ground1Far + cur);
+
+		glPushMatrix();
+		glTranslated(4, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(6, 4, ground1Far + cur);
+
+		cur += 20;
+	}
+
+	/*
+	glPushMatrix();
+	glTranslated(-20, 0, ground1Far);
+	glScaled(0.1, 0.18, 1);
+	glRotated(-90, 0, 1, 0);
+	model_building2.Draw();
+	glPopMatrix();
+	glPushMatrix();
+	glTranslated(20, 0, ground1Far);
+	glScaled(0.1, 0.18, 1);
+	glRotated(90, 0, 1, 0);
+	model_building2.Draw();
+	glPopMatrix();
+	*/
+
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
@@ -260,6 +352,79 @@ void RenderGround()
 
 void RenderGround2()
 {
+	int cur = 20;
+	for (int i = 0; i < 10; i++) {
+		glPushMatrix();
+		glTranslated(-2, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+		
+		checkCrash(3, -2, ground1Far + cur);
+		
+		glPushMatrix();
+		glTranslated(-3, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+		
+		checkCrash(2, -3, ground1Far + cur);
+		
+		glPushMatrix();
+		glTranslated(-4, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+
+		checkCrash(1, -4, ground1Far + cur);
+
+		cur += 20;
+	}
+
+	cur = 10;
+	for (int i = 0; i < 10; i++) {
+		glPushMatrix();
+		glTranslated(2, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+		
+		checkCrash(4, 2, ground1Far + cur);
+		
+		glPushMatrix();
+		glTranslated(3, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+		
+		checkCrash(5, 3, ground1Far + cur);
+
+		glPushMatrix();
+		glTranslated(4, 0, ground1Far + cur);
+		glScaled(0.2, 0.2, 0.2);
+		model_barrier.Draw();
+		glPopMatrix();
+		
+		checkCrash(6, 4, ground1Far + cur);
+
+		cur += 20;
+	}
+
+	/*
+	glPushMatrix();
+	glTranslated(-20, 0, ground2Far);
+	glScaled(0.1, 0.18, 1);
+	glRotated(-90, 0, 1, 0);
+	model_building2.Draw();
+	glPopMatrix();
+	glPushMatrix();
+	glTranslated(20, 0, ground2Far);
+	glScaled(0.1, 0.18, 1);
+	glRotated(90, 0, 1, 0);
+	model_building2.Draw();
+	glPopMatrix();
+	*/
+
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
@@ -300,7 +465,7 @@ void setupCamera() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5 + sideMove+ eyeFp, 1.5-downfp, 3.5 - forward-forwardfp, 5 + sideMove+rightFp, 0+ upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 }
 void myDisplay(void)
 {
@@ -316,96 +481,41 @@ void myDisplay(void)
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
+	carMinX = 4.3 + sideMove;
+	carMaxX = 5.5 + sideMove;
+	carMinY = 0.1;
+	carMaxY = 0.5;
+	carMinZ = -4 - forward;
+	carMaxZ = -0.2 - forward;
 
 
+	//ground
 	RenderGround();
 	RenderGround2();
-	if(fp)
-	RenderCarView();
+
+	//first person
+	if (fp)
+		RenderCarView();
 	// Draw house Model
 
 
+	//car
 	glPushMatrix();
 	glTranslated(-0.5 + sideMove, 0, 0 - forward);
 	glTranslated(5, 0, 0);
 	glRotated(-90, 0, 1, 0);
 	glRotated(sideAngle, 0, 1, 0);
 	glTranslated(-5, 0, 0);
-	if(!fp)
-	 model_house.Draw();
+	if (!fp) {
+		model_car.Draw();
+	}
 	glPopMatrix();
-
-
-
 
 	glutSwapBuffers();
 }
 
-//=======================================================================
-// Keyboard Function
-//=======================================================================
-void myKeyboard(unsigned char button, int x, int y)
-{
-	switch (button)
-	{
-	case 'w':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		break;
-	case 'r':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		break;
-	case 27:
-		exit(0);
-		break;
-	default:
-		break;
-	}
 
-	glutPostRedisplay();
-}
 
-//=======================================================================
-// Motion Function
-//=======================================================================
-void myMotion(int x, int y)
-{
-	y = HEIGHT - y;
-
-	if (cameraZoom - y > 0)
-	{
-		Eye.x += -0.1;
-		Eye.z += -0.1;
-	}
-	else
-	{
-		Eye.x += 0.1;
-		Eye.z += 0.1;
-	}
-
-	cameraZoom = y;
-
-	glLoadIdentity();	//Clear Model_View Matrix
-
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);	//Setup Camera with modified paramters
-
-	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-	glutPostRedisplay();	//Re-draw scene 
-}
-
-//=======================================================================
-// Mouse Function
-//=======================================================================
-void myMouse(int button, int state, int x, int y)
-{
-	y = HEIGHT - y;
-
-	if (state == GLUT_DOWN)
-	{
-		cameraZoom = y;
-	}
-}
 
 //=======================================================================
 // Reshape Function
@@ -430,7 +540,7 @@ void myReshape(int w, int h)
 	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5 + sideMove+eyeFp, 1.5-downfp, 3.5 - forward- forwardfp, 5 + sideMove+rightFp, 0+ upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 }
 
 
@@ -441,7 +551,11 @@ void myReshape(int w, int h)
 void LoadAssets()
 {
 	// Loading Model files
-	model_house.Load("Models/house/house.3ds");
+	model_car.Load("Models/house/house.3ds");
+	model_chair.Load("Models/house/chair.3ds");
+	model_barrier.Load("Models/house/barrier.3ds");
+	//model_building.Load("Models/house/building.3ds");
+	model_building2.Load("Models/house/building2.3ds");
 	model_tree.Load("Models/tree/Tree1.3ds");
 
 	// Loading texture files
@@ -456,14 +570,14 @@ void LoadAssets()
 
 void Anim()
 {
-
+	//first person
 	if (fp) {
 
-		 downfp = 0.7;
-		 forwardfp = 2.8;
-		 upFp = 0.8;
-		 rightFp = 0.16;
-		 eyeFp = 0.1;
+		downfp = 0.7;
+		forwardfp = 2.8;
+		upFp = 0.8;
+		rightFp = 0.16;
+		eyeFp = 0.1;
 	}
 	else {
 		downfp = 0;
@@ -473,6 +587,7 @@ void Anim()
 		eyeFp = 0;
 	}
 
+	//moving side
 	if (sideAngle > 0)
 		sideAngle -= 0.02;
 	else if (sideAngle < 0)
@@ -482,6 +597,7 @@ void Anim()
 	angleView += 0.1;
 	forward += 0.5;
 
+	//next ground
 	if (-forward < ground1Far + 100 && -forward > ground1Far) {
 		ground2Far = ground1Far - 140;
 		ground2Near = ground1Far;
@@ -498,14 +614,13 @@ void Anim()
 void keyboardFunc(int key, int x, int y) {
 
 	switch (key) {
-    case GLUT_KEY_UP:
+	case GLUT_KEY_UP:
 		fp = true;
-			break;
+		break;
 	case GLUT_KEY_DOWN:
 		fp = false;
 		break;
 	case GLUT_KEY_LEFT:
-		//mciSendString("play \"\car.wav\"", NULL, 0, NULL);
 		sideMove -= 0.1;
 		sideAngle = 10;
 		break;
