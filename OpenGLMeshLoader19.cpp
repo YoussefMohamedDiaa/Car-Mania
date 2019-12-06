@@ -76,6 +76,7 @@ Model_3DS model_building;
 Model_3DS model_building2;
 Model_3DS model_barrier;
 Model_3DS model_chair;
+Model_3DS model_powerLine;
 
 // Textures
 GLTexture tex_ground;
@@ -249,7 +250,7 @@ void RenderCarView()
 }
 
 void RenderGround()
-{	
+{
 	int cur = 20;
 	for (int i = 0; i < 10; i++) {
 		glPushMatrix();
@@ -305,6 +306,23 @@ void RenderGround()
 
 		checkCrash(6, 4, ground1Far + cur);
 
+		cur += 20;
+	}
+
+	cur = 10;
+	for (int i = 0; i < 25; i++) {
+		glPushMatrix();
+		glTranslated(-20, 0, ground1Far + cur);
+		glScaled(0.04, 0.02, 0.02);
+		model_powerLine.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(20, 0, ground1Far + cur);
+		glScaled(0.04, 0.02, 0.02);
+		glRotated(-180, 0, 1, 0);
+		model_powerLine.Draw();
+		glPopMatrix();
 		cur += 20;
 	}
 
@@ -352,6 +370,7 @@ void RenderGround()
 
 void RenderGround2()
 {
+	/*
 	int cur = 20;
 	for (int i = 0; i < 10; i++) {
 		glPushMatrix();
@@ -359,17 +378,17 @@ void RenderGround2()
 		glScaled(0.2, 0.2, 0.2);
 		model_barrier.Draw();
 		glPopMatrix();
-		
+
 		checkCrash(3, -2, ground1Far + cur);
-		
+
 		glPushMatrix();
 		glTranslated(-3, 0, ground1Far + cur);
 		glScaled(0.2, 0.2, 0.2);
 		model_barrier.Draw();
 		glPopMatrix();
-		
+
 		checkCrash(2, -3, ground1Far + cur);
-		
+
 		glPushMatrix();
 		glTranslated(-4, 0, ground1Far + cur);
 		glScaled(0.2, 0.2, 0.2);
@@ -388,15 +407,15 @@ void RenderGround2()
 		glScaled(0.2, 0.2, 0.2);
 		model_barrier.Draw();
 		glPopMatrix();
-		
+
 		checkCrash(4, 2, ground1Far + cur);
-		
+
 		glPushMatrix();
 		glTranslated(3, 0, ground1Far + cur);
 		glScaled(0.2, 0.2, 0.2);
 		model_barrier.Draw();
 		glPopMatrix();
-		
+
 		checkCrash(5, 3, ground1Far + cur);
 
 		glPushMatrix();
@@ -404,9 +423,27 @@ void RenderGround2()
 		glScaled(0.2, 0.2, 0.2);
 		model_barrier.Draw();
 		glPopMatrix();
-		
+
 		checkCrash(6, 4, ground1Far + cur);
 
+		cur += 20;
+	}
+	*/
+
+	int cur = 10;
+	for (int i = 0; i < 25; i++) {
+		glPushMatrix();
+		glTranslated(-20, 0, ground2Far + cur);
+		glScaled(0.04, 0.02, 0.02);
+		model_powerLine.Draw();
+		glPopMatrix();
+
+		glPushMatrix();
+		glTranslated(20, 0, ground2Far + cur);
+		glScaled(0.04, 0.02, 0.02);
+		glRotated(-180, 0, 1, 0);
+		model_powerLine.Draw();
+		glPopMatrix();
 		cur += 20;
 	}
 
@@ -552,6 +589,7 @@ void LoadAssets()
 {
 	// Loading Model files
 	model_car.Load("Models/house/house.3ds");
+	model_powerLine.Load("Models/house/powerLine.3ds");
 	model_chair.Load("Models/house/chair.3ds");
 	model_barrier.Load("Models/house/barrier.3ds");
 	//model_building.Load("Models/house/building.3ds");
