@@ -128,6 +128,27 @@ void keyboardOtherButtons(unsigned char key, int x, int y) {
 		}
 }
 
+void light(short lightNumber, std::vector<float> position, std::vector<float> direction, int lightDistribution, int spreadAngle) {
+
+    float modelAmbient = 1, ambient = 1;
+    GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
+
+    GLfloat lDiffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    GLfloat lAmbient[] = { ambient, 0.0f, 0.0f, 1.0f };
+    GLfloat lPosition[] = {position[0], position[1], position[2], true };
+    GLfloat lDirection[] = { direction[0], direction[1], direction[2] };
+    GLfloat lSpecular[] = {1, 0, 0, 1.0f};
+
+    glLightfv(lightNumber, GL_DIFFUSE, lDiffuse);
+    glLightfv(lightNumber, GL_AMBIENT, lAmbient);
+    glLightfv(lightNumber, GL_SPECULAR, lSpecular);
+    glLightfv(lightNumber, GL_POSITION, lPosition);
+    glLightf(lightNumber, GL_SPOT_EXPONENT, lightDistribution);
+    glLightf(lightNumber, GL_SPOT_CUTOFF, spreadAngle);
+    glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
+}
+
 void checkCrash(int coneNum, double x, double z) {
 	if (!gameOver) {
 		if (x + 0.2 <= carMaxX && x >= carMinX && z <= (carMaxZ-1.6) && z >= (carMinZ+1.6)) {
@@ -807,6 +828,16 @@ void main(int argc, char** argv)
 	glutReshapeFunc(myReshape);
 
 	myInit();
+	
+    	glEnable(GL_DEPTH_TEST);
+    	glEnable(GL_LIGHTING);
+    	glEnable(GL_LIGHT0);
+    	glEnable(GL_LIGHT1);
+    	glEnable(GL_LIGHT2);
+    	glEnable(GL_LIGHT3);
+    	glEnable(GL_NORMALIZE);
+    	glEnable(GL_COLOR_MATERIAL);
+   	glShadeModel(GL_SMOOTH);
 
 	LoadAssets();
 	glutSpecialFunc(keyboardFunc);
