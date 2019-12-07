@@ -17,10 +17,17 @@ GLdouble zFar = 100;
 
 double angleView = 0;
 double forward = 0;
-double sideMove = 0;
+double sideMove = -2;
 double sideAngle = 0;
 
 double downfp = 0;
+int crashCount = 0; //might change it to long
+
+int ground1Far = -120;
+int ground1Near = 20;
+int ground2Far = 20;
+int ground2Near = 160;
+int repititions = 4;
 double forwardfp = 0;
 double upFp = 0;
 double rightFp = 0;
@@ -33,18 +40,28 @@ double carMaxY = 0.0;
 double carMinZ = 0.0;
 double carMaxZ = 0.0;
 
-int crashCount = 0; //might change it to long
-
-int ground1Far = -120;
-int ground1Near = 20;
-int ground2Far = 20;
-int ground2Near = 160;
 
 int printCount = 0;
 
 bool nextDone = false;
 bool nextDone2 = false;
 bool fp = false;
+bool scene1 = true;
+
+int score = 0;
+int barrierCounter = 0;
+int lastPrintedScore = 0;
+
+double forwardSpeed = 0.5;
+
+double incrementScore = 0;
+double prevSideMove = 0;
+double prevForwardMove = 0;
+
+int lives = 3;
+
+bool gameOver = false;
+
 class Vector
 {
 public:
@@ -81,11 +98,60 @@ Model_3DS model_chair;
 GLTexture tex_ground;
 GLTexture car_view;
 
+void print(int x, int y, int z, char* string)
+{
+	int len, i;
+
+	glRasterPos3f(x, y, z);
+
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+	}
+}
+void keyboardOtherButtons(unsigned char key, int x, int y) {
+		switch (key)
+		{
+		case 's': scene1 = !scene1;
+			if (scene1) {
+				
+				tex_ground.Load("Textures/ground.bmp");
+			}
+			else {
+				
+				tex_ground.Load("Textures/ground1.bmp");
+			}
+			break;
+		default:
+			break;
+		}
+}
+
 void checkCrash(int coneNum, double x, double z) {
-	if (x + 0.2 <= carMaxX && x >= carMinX && z <= carMaxZ && z >= carMinZ) {
-		mciSendString("play \"\crash.wav\"", NULL, 0, NULL);
-		//printf("crashed %d\n", ++crashCount);
-		//printf("cone: %d\n", coneNum);
+	if (!gameOver) {
+		if (x + 0.2 <= carMaxX && x >= carMinX && z <= (carMaxZ-1.6) && z >= (carMinZ+1.6)) {
+			mciSendString("play \"\crash.wav\"", NULL, 0, NULL);
+			lives--;
+			if (lives == 0) {
+				//lose
+			}
+			gameOver = true;
+		}
+		else {
+			barrierCounter++;
+			if (barrierCounter >= 5000) {
+				score++;
+				if (score % 30 == 0)
+					forwardSpeed += 0.2;
+				barrierCounter = 0;
+			}
+		}
+	}
+	else {
+		char* finalScoreArray[20];
+		sprintf((char*)finalScoreArray, "Final Score : %d", score);
+		print(6.6 + sideMove, 1.2, -0.5 - forward, (char*)(finalScoreArray));
 	}
 }
 
@@ -112,6 +178,7 @@ void InitLightSource()
 	// Define Light source 0 Specular light
 	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
 
 	// Finally, define light source 0 position in World Space
 	GLfloat light_position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
@@ -252,34 +319,138 @@ void RenderGround()
 {	
 	int cur = 20;
 	for (int i = 0; i < 10; i++) {
-		glPushMatrix();
-		glTranslated(-2, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-
-		checkCrash(3, -2, ground1Far + cur);
-
-		glPushMatrix();
-		glTranslated(-3, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-
-		checkCrash(2, -3, ground1Far + cur);
-
-		glPushMatrix();
-		glTranslated(-4, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-
-		checkCrash(1, -4, ground1Far + cur);
-
-		cur += 20;
+		if (i % 2 == 0) {
+			
+			for (int i = 0; i < repititions; i++) {
+				if (scene1) {
+					glPushMatrix();
+					glTranslated(-1 * i, 0, ground1Far + cur);
+					glScaled(0.2, 0.2, 0.2);
+					model_barrier.Draw();
+					glPopMatrix();
+				}
+				checkCrash((-1*i) + 4, -1 * i, ground1Far + cur);
+			}
+			if (!scene1) {
+				glPushMatrix();
+				glTranslated(-1.25, 0, ground1Far + cur);
+				glScaled(0.008, 0.008, 0.008);
+				model_chair.Draw();
+				glPopMatrix();
+			}
+			
+		}
+		else {
+			for (int i = 0; i < repititions; i++) {
+				if (scene1) {
+					glPushMatrix();
+					glTranslated(i, 0, ground1Far + cur);
+					glScaled(0.2, 0.2, 0.2);
+					model_barrier.Draw();
+					glPopMatrix();
+				}
+				checkCrash(i+4, i, ground1Far + cur);
+			}
+			if (!scene1) {
+				glPushMatrix();
+				glTranslated(1.7, 0, ground1Far + cur);
+				glScaled(0.008, 0.008, 0.008);
+				model_chair.Draw();
+				glPopMatrix();
+			}
+			
+		}
+			cur += 45;
 	}
 
-	cur = 10;
+	cur = 20;
+	for (int i = 0; i < 10; i++) {
+		if (i % 2 != 0) {
+			for (int i = 0; i < repititions; i++) {
+				if (scene1) {
+					glPushMatrix();
+					glTranslated(-1 * (i + 5), 0, ground1Far + cur);
+					glScaled(0.2, 0.2, 0.2);
+					model_barrier.Draw();
+					glPopMatrix();
+				}
+				checkCrash(i + 3,-1*(i+5), ground1Far + cur);
+			}
+			if (!scene1) {
+				glPushMatrix();
+				glTranslated(-6.2, 0, ground1Far + cur);
+				glScaled(0.008, 0.008, 0.008);
+				model_chair.Draw();
+				glPopMatrix();
+			}
+			
+		}
+		else {
+			for (int i = 0; i < repititions; i++) {
+				if (scene1) {
+					glPushMatrix();
+					glTranslated((i + 5), 0, ground1Far + cur);
+					glScaled(0.2, 0.2, 0.2);
+					model_barrier.Draw();
+					glPopMatrix();
+				}
+				checkCrash(i + 4,(i + 5), ground1Far + cur);
+			}
+			if (!scene1) {
+				glPushMatrix();
+				glTranslated(6.6, 0, ground1Far + cur);
+				glScaled(0.008, 0.008, 0.008);
+				model_chair.Draw();
+				glPopMatrix();
+			}
+			
+			
+		}
+		cur += 45;
+	}
+
+	cur = 20;
+	for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < repititions; i++) {
+			if (scene1) {
+				glPushMatrix();
+				glTranslated((i + 10) * -1, 0, ground1Far + cur);
+				glScaled(0.2, 0.2, 0.2);
+				model_barrier.Draw();
+				glPopMatrix();
+			}
+			checkCrash(i, (i + 10) * -1, ground1Far + cur);
+		}
+		if (!scene1) {
+			glPushMatrix();
+			glTranslated(11.7, 0, ground1Far + cur);
+			glScaled(0.008, 0.008, 0.008);
+			model_chair.Draw();
+			glPopMatrix();
+		}
+		//=============================================//
+		for (int i = 0; i < repititions; i++) {
+			if (scene1) {
+				glPushMatrix();
+				glTranslated(i + 10, 0, ground1Far + cur);
+				glScaled(0.2, 0.2, 0.2);
+				model_barrier.Draw();
+				glPopMatrix();
+			}
+				checkCrash(4, i + 10, ground1Far + cur);
+			
+		}
+		if (!scene1) {
+			glPushMatrix();
+			glTranslated(-11, 0, ground1Far + cur);
+			glScaled(0.008, 0.008, 0.008);
+			model_chair.Draw();
+			glPopMatrix();
+		}
+		cur += 45;
+	}
+
+	/*cur = 10;
 	for (int i = 0; i < 10; i++) {
 		glPushMatrix();
 		glTranslated(2, 0, ground1Far + cur);
@@ -306,7 +477,7 @@ void RenderGround()
 		checkCrash(6, 4, ground1Far + cur);
 
 		cur += 20;
-	}
+	}*/
 
 	/*
 	glPushMatrix();
@@ -352,64 +523,8 @@ void RenderGround()
 
 void RenderGround2()
 {
-	int cur = 20;
-	for (int i = 0; i < 10; i++) {
-		glPushMatrix();
-		glTranslated(-2, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-		
-		checkCrash(3, -2, ground1Far + cur);
-		
-		glPushMatrix();
-		glTranslated(-3, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-		
-		checkCrash(2, -3, ground1Far + cur);
-		
-		glPushMatrix();
-		glTranslated(-4, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
 
-		checkCrash(1, -4, ground1Far + cur);
-
-		cur += 20;
-	}
-
-	cur = 10;
-	for (int i = 0; i < 10; i++) {
-		glPushMatrix();
-		glTranslated(2, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-		
-		checkCrash(4, 2, ground1Far + cur);
-		
-		glPushMatrix();
-		glTranslated(3, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-		
-		checkCrash(5, 3, ground1Far + cur);
-
-		glPushMatrix();
-		glTranslated(4, 0, ground1Far + cur);
-		glScaled(0.2, 0.2, 0.2);
-		model_barrier.Draw();
-		glPopMatrix();
-		
-		checkCrash(6, 4, ground1Far + cur);
-
-		cur += 20;
-	}
-
+	
 	/*
 	glPushMatrix();
 	glTranslated(-20, 0, ground2Far);
@@ -460,21 +575,33 @@ void RenderGround2()
 void setupCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glOrtho(-4, 4, -4, 4, -5, 5);
 	gluPerspective(60, 640 / 480, 0.001, 100);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 }
+
+
 void myDisplay(void)
 {
-
+	glColor3f(1.0, 1, 1);
 	setupCamera();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+	if (score - lastPrintedScore >= 10 || lastPrintedScore == 0) {
+		prevSideMove = sideMove;
+		prevForwardMove = forward;
+
+		lastPrintedScore = score;
+	}
+	else {
+		char* scoreArray[20];
+		sprintf((char*)scoreArray, "Score : %d", score);
+		print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
+	}
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
@@ -498,6 +625,7 @@ void myDisplay(void)
 		RenderCarView();
 	// Draw house Model
 
+	
 
 	//car
 	glPushMatrix();
@@ -510,6 +638,8 @@ void myDisplay(void)
 		model_car.Draw();
 	}
 	glPopMatrix();
+
+
 
 	glutSwapBuffers();
 }
@@ -550,16 +680,26 @@ void myReshape(int w, int h)
 //=======================================================================
 void LoadAssets()
 {
+
 	// Loading Model files
 	model_car.Load("Models/house/house.3ds");
-	model_chair.Load("Models/house/chair.3ds");
-	model_barrier.Load("Models/house/barrier.3ds");
+	
+	
 	//model_building.Load("Models/house/building.3ds");
 	model_building2.Load("Models/house/building2.3ds");
 	model_tree.Load("Models/tree/Tree1.3ds");
-
+	model_chair.Load("Models/house/chair.3ds");
+	model_barrier.Load("Models/house/barrier.3ds");
 	// Loading texture files
-	tex_ground.Load("Textures/ground.bmp");
+	if (scene1) {
+		tex_ground.Load("Textures/ground.bmp");
+		
+	}
+	else {
+
+		tex_ground.Load("Textures/ground1.bmp");
+		
+	}
 	car_view.Load("Textures/carView.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
@@ -570,6 +710,7 @@ void LoadAssets()
 
 void Anim()
 {
+	
 	//first person
 	if (fp) {
 
@@ -595,7 +736,14 @@ void Anim()
 
 
 	angleView += 0.1;
-	forward += 0.5;
+	if(!gameOver)
+		forward += forwardSpeed;
+
+	incrementScore += 0.000000000001;
+	if (incrementScore >= 1) {
+		incrementScore = 0;
+		score++;
+	}
 
 	//next ground
 	if (-forward < ground1Far + 100 && -forward > ground1Far) {
@@ -612,24 +760,24 @@ void Anim()
 }
 
 void keyboardFunc(int key, int x, int y) {
-
-	switch (key) {
-	case GLUT_KEY_UP:
-		fp = true;
-		break;
-	case GLUT_KEY_DOWN:
-		fp = false;
-		break;
-	case GLUT_KEY_LEFT:
-		sideMove -= 0.1;
-		sideAngle = 10;
-		break;
-	case GLUT_KEY_RIGHT:
-		sideMove += 0.1;
-		sideAngle = -10;
-		break;
+	if (!gameOver) {
+		switch (key) {
+		case GLUT_KEY_UP:
+			fp = true;
+			break;
+		case GLUT_KEY_DOWN:
+			fp = false;
+			break;
+		case GLUT_KEY_LEFT:
+			sideMove = max(sideMove-0.1,-24);
+			sideAngle = 10;
+			break;
+		case GLUT_KEY_RIGHT:
+			sideMove = min(sideMove + 0.1,14);
+			sideAngle = -10;
+			break;
+		}
 	}
-
 }
 
 
@@ -664,6 +812,6 @@ void main(int argc, char** argv)
 	glutSpecialFunc(keyboardFunc);
 	glutIdleFunc(Anim);
 	glShadeModel(GL_SMOOTH);
-
+	glutKeyboardFunc(keyboardOtherButtons);
 	glutMainLoop();
 }
