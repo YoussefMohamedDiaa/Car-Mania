@@ -138,7 +138,7 @@ void keyboardOtherButtons(unsigned char key, int x, int y) {
 
 void light(short lightNumber, std::vector<float> position, std::vector<float> direction, int lightDistribution, int spreadAngle) {
 
-	float modelAmbient = 0.1, ambient = 1;
+	float modelAmbient = 0.1, ambient = 100;
 	GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
 
@@ -196,6 +196,9 @@ void InitLightSource()
 	// Enable Light Source number 0
 	// OpengL has 8 light sources
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT3);
 
 	// Define Light source 0 ambient light
 	GLfloat ambient[] = { 0.1f, 0.1f, 0.1, 1.0f };
@@ -673,12 +676,13 @@ void myDisplay(void)
 	glColor3f(1.0, 1, 1);
 	setupCamera();
 
+	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+	//glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	//glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
 	carMinX = 4.3 + sideMove;
 	carMaxX = 5.5 + sideMove;
@@ -686,6 +690,23 @@ void myDisplay(void)
 	carMaxY = 0.5;
 	carMinZ = -4 - forward;
 	carMaxZ = -0.2 - forward;
+
+	//glColor3f(1, 0, 0);
+	//glPushMatrix();
+	//glTranslated(0,1,0);
+	//glutSolidCube(0.25);
+	//glPopMatrix();
+	//glPushMatrix();
+	//glColor3f(1, 1, 1);
+	//glBegin(GL_QUADS);
+	//glVertex3f(-10, 0.3, -2);
+	//glVertex3f(-10, 0.3, -5);
+	//glVertex3f(100, 0.3, -5);
+	//glVertex3f(100, 0.3, -2);
+	//glEnd();
+	//glutSolidCube(0.25);
+	//glPopMatrix();
+	//light(GL_LIGHT0, { (float)(0), 0, (float)(-5) }, { 0, 0, 1 }, 10, 30);
 
 	//ground
 	RenderGround();
@@ -732,14 +753,13 @@ void myDisplay(void)
 		glVertex3f(3, 0, -5);
 		glEnd();
 	*/
-	//glutSolidCube(0.25);
 
 	//light(GL_LIGHT1, { 0, 0, -1 }, { 0, 0, 1 }, 10, 90);
 	///light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 10) }, { 0, 0, -1 }, 10, 90);
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 20) }, { 0, 0, -1 }, 10, 90);
-	light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward + 30) }, { 0, 0, 1 }, 10, 120);
+	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward + 30) }, { 0, 0, 1 }, 10, 120);
 
 	glutSwapBuffers();
 }
@@ -772,7 +792,7 @@ void myReshape(int w, int h)
 	glLoadIdentity();
 	//gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
 	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp + jump, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp + jump, 0.0 - forward, 0.0, 1.0, 0.0);
-	//gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
+	//	gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
 }
 
 
@@ -871,7 +891,7 @@ void Anim()
 	angleView += 0.1;
 	if (!gameOver) {
 		//if (scene1)
-			forward += forwardSpeed;
+		forward += forwardSpeed;
 		//else
 			//forward += 4 * forwardSpeed;
 	}
