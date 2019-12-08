@@ -2,6 +2,7 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
+#include <vector>
 
 int WIDTH = 1280;
 int HEIGHT = 720;
@@ -130,7 +131,7 @@ void keyboardOtherButtons(unsigned char key, int x, int y) {
 
 void light(short lightNumber, std::vector<float> position, std::vector<float> direction, int lightDistribution, int spreadAngle) {
 
-    float modelAmbient = 1, ambient = 1;
+    float modelAmbient = 0.1, ambient = 1;
     GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
 
@@ -148,6 +149,7 @@ void light(short lightNumber, std::vector<float> position, std::vector<float> di
     glLightf(lightNumber, GL_SPOT_CUTOFF, spreadAngle);
     glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
 }
+
 
 void checkCrash(int coneNum, double x, double z) {
 	if (!gameOver) {
@@ -601,6 +603,7 @@ void setupCamera() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	//gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
 }
 
 
@@ -659,8 +662,22 @@ void myDisplay(void)
 		model_car.Draw();
 	}
 	glPopMatrix();
+/*
+	glBegin(GL_QUADS);
+	glVertex3f(-3, 0, -5);
+	glVertex3f(-3, 0, -10);
+	glVertex3f(3, 0, -10);
+	glVertex3f(3, 0, -5);
+	glEnd();
+*/
+	//glutSolidCube(0.25);
 
-
+	//light(GL_LIGHT1, { 0, 0, -1 }, { 0, 0, 1 }, 10, 90);
+	///light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
+	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 10) }, { 0, 0, -1 }, 10, 90);
+	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
+	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 20) }, { 0, 0, -1 }, 10, 90);
+	light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward + 30) }, { 0, 0, 1 }, 10, 120);
 
 	glutSwapBuffers();
 }
@@ -691,7 +708,8 @@ void myReshape(int w, int h)
 	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	//gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
 }
 
 
@@ -757,8 +775,12 @@ void Anim()
 
 
 	angleView += 0.1;
-	if(!gameOver)
-		forward += forwardSpeed;
+	if (!gameOver) {
+		if (scene1)
+			forward += forwardSpeed;
+		else
+			forward += 4 * forwardSpeed;
+	}
 
 	incrementScore += 0.000000000001;
 	if (incrementScore >= 1) {
@@ -790,11 +812,17 @@ void keyboardFunc(int key, int x, int y) {
 			fp = false;
 			break;
 		case GLUT_KEY_LEFT:
-			sideMove = max(sideMove-0.1,-24);
+			if (scene1)
+				sideMove = max(sideMove - 0.1, -24);
+			else
+				sideMove = max(sideMove - 0.4, -24);
 			sideAngle = 10;
 			break;
 		case GLUT_KEY_RIGHT:
-			sideMove = min(sideMove + 0.1,14);
+			if (scene1)
+				sideMove = min(sideMove + 0.1, 14);
+			else
+				sideMove = min(sideMove + 0.4, 14);
 			sideAngle = -10;
 			break;
 		}
@@ -828,16 +856,16 @@ void main(int argc, char** argv)
 	glutReshapeFunc(myReshape);
 
 	myInit();
-	
-    	glEnable(GL_DEPTH_TEST);
-    	glEnable(GL_LIGHTING);
-    	glEnable(GL_LIGHT0);
-    	glEnable(GL_LIGHT1);
-    	glEnable(GL_LIGHT2);
-    	glEnable(GL_LIGHT3);
-    	glEnable(GL_NORMALIZE);
-    	glEnable(GL_COLOR_MATERIAL);
-   	glShadeModel(GL_SMOOTH);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
+	glEnable(GL_LIGHT3);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
 
 	LoadAssets();
 	glutSpecialFunc(keyboardFunc);
