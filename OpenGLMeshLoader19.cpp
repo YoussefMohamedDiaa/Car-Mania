@@ -63,6 +63,11 @@ int lives = 3;
 
 bool gameOver = false;
 
+double jump = 0;
+double jumpAngle = 0;
+bool ramp = false;
+bool upJump = true;
+
 class Vector
 {
 public:
@@ -94,10 +99,12 @@ Model_3DS model_building;
 Model_3DS model_building2;
 Model_3DS model_barrier;
 Model_3DS model_chair;
+Model_3DS model_powerLine;
 
 // Textures
 GLTexture tex_ground;
 GLTexture car_view;
+GLTexture tex_wood;
 
 void print(int x, int y, int z, char* string)
 {
@@ -112,48 +119,48 @@ void print(int x, int y, int z, char* string)
 	}
 }
 void keyboardOtherButtons(unsigned char key, int x, int y) {
-		switch (key)
-		{
-		case 's': scene1 = !scene1;
-			if (scene1) {
-				
-				tex_ground.Load("Textures/ground.bmp");
-			}
-			else {
-				
-				tex_ground.Load("Textures/ground1.bmp");
-			}
-			break;
-		default:
-			break;
+	switch (key)
+	{
+	case 's': scene1 = !scene1;
+		if (scene1) {
+
+			tex_ground.Load("Textures/ground.bmp");
 		}
+		else {
+
+			tex_ground.Load("Textures/ground1.bmp");
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void light(short lightNumber, std::vector<float> position, std::vector<float> direction, int lightDistribution, int spreadAngle) {
 
-    float modelAmbient = 0.1, ambient = 1;
-    GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
+	float modelAmbient = 0.1, ambient = 1;
+	GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
 
-    GLfloat lDiffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    GLfloat lAmbient[] = { ambient, 0.0f, 0.0f, 1.0f };
-    GLfloat lPosition[] = {position[0], position[1], position[2], true };
-    GLfloat lDirection[] = { direction[0], direction[1], direction[2] };
-    GLfloat lSpecular[] = {1, 0, 0, 1.0f};
+	GLfloat lDiffuse[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	GLfloat lAmbient[] = { ambient, 0.0f, 0.0f, 1.0f };
+	GLfloat lPosition[] = { position[0], position[1], position[2], true };
+	GLfloat lDirection[] = { direction[0], direction[1], direction[2] };
+	GLfloat lSpecular[] = { 1, 0, 0, 1.0f };
 
-    glLightfv(lightNumber, GL_DIFFUSE, lDiffuse);
-    glLightfv(lightNumber, GL_AMBIENT, lAmbient);
-    glLightfv(lightNumber, GL_SPECULAR, lSpecular);
-    glLightfv(lightNumber, GL_POSITION, lPosition);
-    glLightf(lightNumber, GL_SPOT_EXPONENT, lightDistribution);
-    glLightf(lightNumber, GL_SPOT_CUTOFF, spreadAngle);
-    glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
+	glLightfv(lightNumber, GL_DIFFUSE, lDiffuse);
+	glLightfv(lightNumber, GL_AMBIENT, lAmbient);
+	glLightfv(lightNumber, GL_SPECULAR, lSpecular);
+	glLightfv(lightNumber, GL_POSITION, lPosition);
+	glLightf(lightNumber, GL_SPOT_EXPONENT, lightDistribution);
+	glLightf(lightNumber, GL_SPOT_CUTOFF, spreadAngle);
+	glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
 }
 
 
 void checkCrash(int coneNum, double x, double z) {
 	if (!gameOver) {
-		if (x + 0.2 <= carMaxX && x >= carMinX && z <= (carMaxZ-1.6) && z >= (carMinZ+1.6)) {
+		if (x + 0.2 <= carMaxX && x >= carMinX && z <= (carMaxZ - 1.6) && z >= (carMinZ + 1.6)) {
 			mciSendString("play \"\crash.wav\"", NULL, 0, NULL);
 			lives--;
 			if (lives == 0) {
@@ -165,7 +172,7 @@ void checkCrash(int coneNum, double x, double z) {
 			barrierCounter++;
 			if (barrierCounter >= 5000) {
 				score++;
-				if (score % 30 == 0)
+				if (score == 30)
 					forwardSpeed += 0.2;
 				barrierCounter = 0;
 			}
@@ -339,11 +346,15 @@ void RenderCarView()
 }
 
 void RenderGround()
-{	
+{
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	
 	int cur = 20;
 	for (int i = 0; i < 10; i++) {
 		if (i % 2 == 0) {
-			
+
 			for (int i = 0; i < repititions; i++) {
 				if (scene1) {
 					glPushMatrix();
@@ -352,7 +363,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
-				checkCrash((-1*i) + 4, -1 * i, ground1Far + cur);
+				checkCrash((-1 * i) + 4, -1 * i, ground1Far + cur);
 			}
 			if (!scene1) {
 				glPushMatrix();
@@ -361,7 +372,7 @@ void RenderGround()
 				model_chair.Draw();
 				glPopMatrix();
 			}
-			
+
 		}
 		else {
 			for (int i = 0; i < repititions; i++) {
@@ -372,7 +383,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
-				checkCrash(i+4, i, ground1Far + cur);
+				checkCrash(i + 4, i, ground1Far + cur);
 			}
 			if (!scene1) {
 				glPushMatrix();
@@ -381,9 +392,28 @@ void RenderGround()
 				model_chair.Draw();
 				glPopMatrix();
 			}
-			
+
 		}
-			cur += 45;
+		cur += 45;
+	}
+
+	if (scene1) {
+		cur = 10;
+		for (int i = 0; i < 25; i++) {
+			glPushMatrix();
+			glTranslated(-20, 0, ground1Far + cur);
+			glScaled(0.04, 0.02, 0.02);
+			model_powerLine.Draw();
+			glPopMatrix();
+
+			glPushMatrix();
+			glTranslated(20, 0, ground1Far + cur);
+			glScaled(0.04, 0.02, 0.02);
+			glRotated(-180, 0, 1, 0);
+			model_powerLine.Draw();
+			glPopMatrix();
+			cur += 20;
+		}
 	}
 
 	cur = 20;
@@ -397,7 +427,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
-				checkCrash(i + 3,-1*(i+5), ground1Far + cur);
+				checkCrash(i + 3, -1 * (i + 5), ground1Far + cur);
 			}
 			if (!scene1) {
 				glPushMatrix();
@@ -406,7 +436,7 @@ void RenderGround()
 				model_chair.Draw();
 				glPopMatrix();
 			}
-			
+
 		}
 		else {
 			for (int i = 0; i < repititions; i++) {
@@ -417,7 +447,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
-				checkCrash(i + 4,(i + 5), ground1Far + cur);
+				checkCrash(i + 4, (i + 5), ground1Far + cur);
 			}
 			if (!scene1) {
 				glPushMatrix();
@@ -426,8 +456,8 @@ void RenderGround()
 				model_chair.Draw();
 				glPopMatrix();
 			}
-			
-			
+
+
 		}
 		cur += 45;
 	}
@@ -460,8 +490,8 @@ void RenderGround()
 				model_barrier.Draw();
 				glPopMatrix();
 			}
-				checkCrash(4, i + 10, ground1Far + cur);
-			
+			checkCrash(4, i + 10, ground1Far + cur);
+
 		}
 		if (!scene1) {
 			glPushMatrix();
@@ -517,9 +547,6 @@ void RenderGround()
 	glPopMatrix();
 	*/
 
-	glDisable(GL_LIGHTING);	// Disable lighting 
-
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -547,25 +574,59 @@ void RenderGround()
 void RenderGround2()
 {
 
-	
-	/*
-	glPushMatrix();
-	glTranslated(-20, 0, ground2Far);
-	glScaled(0.1, 0.18, 1);
-	glRotated(-90, 0, 1, 0);
-	model_building2.Draw();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslated(20, 0, ground2Far);
-	glScaled(0.1, 0.18, 1);
-	glRotated(90, 0, 1, 0);
-	model_building2.Draw();
-	glPopMatrix();
-	*/
 
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	if (scene1) {
+		int cur = 10;
+		for (int i = 0; i < 25; i++) {
+			glPushMatrix();
+			glTranslated(-20, 0, ground2Far + cur);
+			glScaled(0.04, 0.02, 0.02);
+			model_powerLine.Draw();
+			glPopMatrix();
+
+			glPushMatrix();
+			glTranslated(20, 0, ground2Far + cur);
+			glScaled(0.04, 0.02, 0.02);
+			glRotated(-180, 0, 1, 0);
+			model_powerLine.Draw();
+			glPopMatrix();
+			cur += 20;
+		}
+
+		glPushMatrix();
+		glTranslated(0, 0, ground2Far + 80);
+		glScaled(0.2, 0.15, 0.1);
+		glRotated(-180, 0, 1, 0);
+		model_building2.Draw();
+		glPopMatrix();
+
+		//ramp
+		glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+		glBindTexture(GL_TEXTURE_2D, tex_wood.texture[0]);	// Bind the ground texture
+
+		glPushMatrix();
+		glTranslated(0, 0, (ground2Far + 80 + 49));
+		glRotated(30, 1, 0, 0);
+		glTranslated(0, 0, -(ground2Far + 80 + 49));
+		glBegin(GL_QUADS);
+		glNormal3f(0, 1, 0);	// Set quad normal direction.
+		glTexCoord2f(0, 0);
+		glVertex3f(-2, 0, ground2Far + 80 + 34);
+		glTexCoord2f(5, 0);
+		glVertex3f(2, 0, ground2Far + 80 + 34);
+		glTexCoord2f(5, 5);
+		glVertex3f(2, 0, ground2Far + 80 + 64);
+		glTexCoord2f(0, 5);
+		glVertex3f(-2, 0, ground2Far + 80 + 64);
+		glEnd();
+		glPopMatrix();
+	}
+
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -602,7 +663,7 @@ void setupCamera() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp + jump, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp + jump, 0.0 - forward, 0.0, 1.0, 0.0);
 	//gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
 }
 
@@ -613,19 +674,6 @@ void myDisplay(void)
 	setupCamera();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-	if (score - lastPrintedScore >= 10 || lastPrintedScore == 0) {
-		prevSideMove = sideMove;
-		prevForwardMove = forward;
-
-		lastPrintedScore = score;
-	}
-	else {
-		char* scoreArray[20];
-		sprintf((char*)scoreArray, "Score : %d", score);
-		print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
-	}
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
@@ -639,22 +687,36 @@ void myDisplay(void)
 	carMinZ = -4 - forward;
 	carMaxZ = -0.2 - forward;
 
-
 	//ground
 	RenderGround();
 	RenderGround2();
+
+	if (score - lastPrintedScore >= 10 || lastPrintedScore == 0) {
+		prevSideMove = sideMove;
+		prevForwardMove = forward;
+
+		lastPrintedScore = score;
+	}
+	else {
+		char* scoreArray[20];
+		sprintf((char*)scoreArray, "Score : %d", score);
+		print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
+	}
+
+
 
 	//first person
 	if (fp)
 		RenderCarView();
 	// Draw house Model
 
-	
+
 
 	//car
 	glPushMatrix();
-	glTranslated(-0.5 + sideMove, 0, 0 - forward);
+	glTranslated(-0.5 + sideMove, jump, 0 - forward);
 	glTranslated(5, 0, 0);
+	glRotated(jumpAngle, 1, 0, 0);
 	glRotated(-90, 0, 1, 0);
 	glRotated(sideAngle, 0, 1, 0);
 	glTranslated(-5, 0, 0);
@@ -662,14 +724,14 @@ void myDisplay(void)
 		model_car.Draw();
 	}
 	glPopMatrix();
-/*
-	glBegin(GL_QUADS);
-	glVertex3f(-3, 0, -5);
-	glVertex3f(-3, 0, -10);
-	glVertex3f(3, 0, -10);
-	glVertex3f(3, 0, -5);
-	glEnd();
-*/
+	/*
+		glBegin(GL_QUADS);
+		glVertex3f(-3, 0, -5);
+		glVertex3f(-3, 0, -10);
+		glVertex3f(3, 0, -10);
+		glVertex3f(3, 0, -5);
+		glEnd();
+	*/
 	//glutSolidCube(0.25);
 
 	//light(GL_LIGHT1, { 0, 0, -1 }, { 0, 0, 1 }, 10, 90);
@@ -709,7 +771,8 @@ void myReshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp, 0.0 - forward, 0.0, 1.0, 0.0);
-	gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
+	gluLookAt(5 + sideMove + eyeFp, 1.5 - downfp + jump, 3.5 - forward - forwardfp, 5 + sideMove + rightFp, 0 + upFp + jump, 0.0 - forward, 0.0, 1.0, 0.0);
+	//gluLookAt(0, 0, 1, 0, 0, 0, 0.0, 1.0, 0.0);
 }
 
 
@@ -722,9 +785,10 @@ void LoadAssets()
 
 	// Loading Model files
 	model_car.Load("Models/house/house.3ds");
-	
-	
+
+
 	//model_building.Load("Models/house/building.3ds");
+	model_powerLine.Load("Models/house/powerLine.3ds");
 	model_building2.Load("Models/house/building2.3ds");
 	model_tree.Load("Models/tree/Tree1.3ds");
 	model_chair.Load("Models/house/chair.3ds");
@@ -732,13 +796,14 @@ void LoadAssets()
 	// Loading texture files
 	if (scene1) {
 		tex_ground.Load("Textures/ground.bmp");
-		
+
 	}
 	else {
 
 		tex_ground.Load("Textures/ground1.bmp");
-		
+
 	}
+	tex_wood.Load("Textures/wood.bmp");
 	car_view.Load("Textures/carView.bmp");
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
@@ -749,7 +814,36 @@ void LoadAssets()
 
 void Anim()
 {
-	
+
+	if (scene1) {
+		if (2 + 0.2 >= carMaxX && -2 - 0.2 <= carMinX && -forward > ground2Far + 80 + 45 && -forward < ground2Far + 80 + 50 && -forward<ground2Near && -forward > ground2Far)
+			ramp = true;
+		else if (-forward > ground2Far + 80 + 5 && -forward < ground2Far + 80 + 10 && -forward<ground2Near && -forward > ground2Far) {
+			if(!jump)
+			gameOver = true;
+		}
+
+		if (ramp) {
+			if (upJump && jump < 30) {
+				jump += 0.5;
+				jumpAngle = 30;
+			}
+			else
+			{
+				upJump = false;
+				if (jumpAngle > 0)
+					jumpAngle -= 0.5;
+
+				if (jump > 0)
+					jump -= 0.5;
+				else {
+					ramp = false;
+					upJump = true;
+				}
+			}
+		}
+	}
+
 	//first person
 	if (fp) {
 
