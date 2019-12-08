@@ -812,17 +812,11 @@ void keyboardFunc(int key, int x, int y) {
 			fp = false;
 			break;
 		case GLUT_KEY_LEFT:
-			if (scene1)
-				sideMove = max(sideMove - 0.1, -24);
-			else
-				sideMove = max(sideMove - 0.4, -24);
+			sideMove = max(sideMove - 0.1, -24);
 			sideAngle = 10;
 			break;
 		case GLUT_KEY_RIGHT:
-			if (scene1)
-				sideMove = min(sideMove + 0.1, 14);
-			else
-				sideMove = min(sideMove + 0.4, 14);
+			sideMove = min(sideMove + 0.1, 14);
 			sideAngle = -10;
 			break;
 		}
