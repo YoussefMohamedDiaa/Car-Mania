@@ -67,6 +67,11 @@ double jump = 0;
 double jumpAngle = 0;
 bool ramp = false;
 bool upJump = true;
+bool red = false;
+bool green = false;
+bool levelTwo = false;
+bool begin = false;
+bool beginAgain = false;
 
 class Vector
 {
@@ -131,6 +136,9 @@ void keyboardOtherButtons(unsigned char key, int x, int y) {
 			tex_ground.Load("Textures/ground1.bmp");
 		}
 		break;
+	case 'g': green = !green;break;
+	case 'r': red = !red; break;
+	case 'b': begin = !begin; break;
 	default:
 		break;
 	}
@@ -157,6 +165,27 @@ void light(short lightNumber, std::vector<float> position, std::vector<float> di
 	glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
 }
 
+void lightGreen(short lightNumber, std::vector<float> position, std::vector<float> direction, int lightDistribution, int spreadAngle) {
+
+	float modelAmbient = 0.1, ambient = 100;
+	GLfloat model_ambient[] = { modelAmbient, modelAmbient, modelAmbient, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, model_ambient);
+
+	GLfloat lDiffuse[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	GLfloat lAmbient[] = { ambient, 0.0f, 0.0f, 1.0f };
+	GLfloat lPosition[] = { position[0], position[1], position[2], true };
+	GLfloat lDirection[] = { direction[0], direction[1], direction[2] };
+	GLfloat lSpecular[] = { 0, 1, 0, 1.0f };
+
+	glLightfv(lightNumber, GL_DIFFUSE, lDiffuse);
+	glLightfv(lightNumber, GL_AMBIENT, lAmbient);
+	glLightfv(lightNumber, GL_SPECULAR, lSpecular);
+	glLightfv(lightNumber, GL_POSITION, lPosition);
+	glLightf(lightNumber, GL_SPOT_EXPONENT, lightDistribution);
+	glLightf(lightNumber, GL_SPOT_CUTOFF, spreadAngle);
+	glLightfv(lightNumber, GL_SPOT_DIRECTION, lDirection);
+}
+
 
 void checkCrash(int coneNum, double x, double z) {
 	if (!gameOver) {
@@ -172,8 +201,10 @@ void checkCrash(int coneNum, double x, double z) {
 			barrierCounter++;
 			if (barrierCounter >= 5000) {
 				score++;
-				if (score == 30)
+				if (score == 30) {
 					forwardSpeed += 0.2;
+					levelTwo = true;
+				}
 				barrierCounter = 0;
 			}
 		}
@@ -353,7 +384,7 @@ void RenderGround()
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
-	
+
 	int cur = 20;
 	for (int i = 0; i < 10; i++) {
 		if (i % 2 == 0) {
@@ -366,6 +397,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
+				if(!jump)
 				checkCrash((-1 * i) + 4, -1 * i, ground1Far + cur);
 			}
 			if (!scene1) {
@@ -386,6 +418,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
+				if (!jump)
 				checkCrash(i + 4, i, ground1Far + cur);
 			}
 			if (!scene1) {
@@ -430,6 +463,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
+				if (!jump)
 				checkCrash(i + 3, -1 * (i + 5), ground1Far + cur);
 			}
 			if (!scene1) {
@@ -450,6 +484,7 @@ void RenderGround()
 					model_barrier.Draw();
 					glPopMatrix();
 				}
+				if (!jump)
 				checkCrash(i + 4, (i + 5), ground1Far + cur);
 			}
 			if (!scene1) {
@@ -466,6 +501,7 @@ void RenderGround()
 	}
 
 	cur = 20;
+	if(levelTwo)
 	for (int i = 0; i < 10; i++) {
 		for (int i = 0; i < repititions; i++) {
 			if (scene1) {
@@ -475,6 +511,7 @@ void RenderGround()
 				model_barrier.Draw();
 				glPopMatrix();
 			}
+			if (!jump)
 			checkCrash(i, (i + 10) * -1, ground1Far + cur);
 		}
 		if (!scene1) {
@@ -485,6 +522,7 @@ void RenderGround()
 			glPopMatrix();
 		}
 		//=============================================//
+		if (levelTwo)
 		for (int i = 0; i < repititions; i++) {
 			if (scene1) {
 				glPushMatrix();
@@ -493,6 +531,7 @@ void RenderGround()
 				model_barrier.Draw();
 				glPopMatrix();
 			}
+			if (!jump)
 			checkCrash(4, i + 10, ground1Far + cur);
 
 		}
@@ -676,8 +715,9 @@ void myDisplay(void)
 	glColor3f(1.0, 1, 1);
 	setupCamera();
 
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
@@ -708,6 +748,11 @@ void myDisplay(void)
 	//glPopMatrix();
 	//light(GL_LIGHT0, { (float)(0), 0, (float)(-5) }, { 0, 0, 1 }, 10, 30);
 
+	if (begin&&!beginAgain) {
+		PlaySound(TEXT("car.wav"), NULL, SND_ASYNC | SND_LOOP);
+		beginAgain = true;
+	}
+
 	//ground
 	RenderGround();
 	RenderGround2();
@@ -719,10 +764,18 @@ void myDisplay(void)
 		lastPrintedScore = score;
 	}
 	else {
-		char* scoreArray[20];
-		sprintf((char*)scoreArray, "Score : %d", score);
-		print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
-	}
+
+		if (!levelTwo) {
+			char* scoreArray[30];
+			sprintf((char*)scoreArray, "level 1 Score : %d", score);
+			print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
+		}
+		else {
+			char* scoreArray[30];
+			sprintf((char*)scoreArray, "level 2 Score : %d", score);
+			print(6.6 + prevSideMove, 1.2, -0.5 - prevForwardMove - 100, (char*)(scoreArray));
+		}
+   }
 
 
 
@@ -755,7 +808,10 @@ void myDisplay(void)
 	*/
 
 	//light(GL_LIGHT1, { 0, 0, -1 }, { 0, 0, 1 }, 10, 90);
-	///light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
+	if(red)
+	  light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
+
+	
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 10) }, { 0, 0, -1 }, 10, 90);
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 20) }, { 0, 0, -1 }, 10, 90);
@@ -835,12 +891,13 @@ void LoadAssets()
 void Anim()
 {
 
+
 	if (scene1) {
 		if (2 + 0.2 >= carMaxX && -2 - 0.2 <= carMinX && -forward > ground2Far + 80 + 45 && -forward < ground2Far + 80 + 50 && -forward<ground2Near && -forward > ground2Far)
 			ramp = true;
 		else if (-forward > ground2Far + 80 + 5 && -forward < ground2Far + 80 + 10 && -forward<ground2Near && -forward > ground2Far) {
-			if(!jump)
-			gameOver = true;
+			if (!jump)
+				gameOver = true;
 		}
 
 		if (ramp) {
@@ -890,8 +947,9 @@ void Anim()
 
 	angleView += 0.1;
 	if (!gameOver) {
-		//if (scene1)
+		if(begin)
 		forward += forwardSpeed;
+		//if (scene1)
 		//else
 			//forward += 4 * forwardSpeed;
 	}
@@ -953,7 +1011,7 @@ void main(int argc, char** argv)
 
 	glutDisplayFunc(myDisplay);
 
-	PlaySound(TEXT("car.wav"), NULL, SND_ASYNC | SND_LOOP);
+	
 
 	//glutKeyboardFunc(myKeyboard);
 
