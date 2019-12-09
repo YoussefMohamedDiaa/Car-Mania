@@ -1,10 +1,12 @@
 ﻿  OpenGLMeshLoader19.cpp
 C:\Users\Mohamed A. Abu Atala\Car-Mania\TextureBuilder.h(27,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
 C:\Users\Mohamed A. Abu Atala\Car-Mania\TextureBuilder.h(28,52): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(164,18): warning C4129: 'c': unrecognized character escape sequence
-C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(183,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(193,18): warning C4129: 'c': unrecognized character escape sequence
+C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(215,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
-C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(723,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(771,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
+C:\Users\Mohamed A. Abu Atala\Car-Mania\OpenGLMeshLoader19.cpp(776,1): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(1774): message : see declaration of 'sprintf'
 GLTexture.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
   OpenGLMeshLoader.vcxproj -> C:\Users\Mohamed A. Abu Atala\Car-Mania\Debug\OpenGLMeshLoader19.exe

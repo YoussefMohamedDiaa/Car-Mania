@@ -810,7 +810,7 @@ void myDisplay(void)
 
 	//light(GL_LIGHT1, { 0, 0, -1 }, { 0, 0, 1 }, 10, 90);
 	if(red)
-	  light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, -1 }, 10, 90);
+	  light(GL_LIGHT2, { (float)(-0.5 + sideMove), 0, (float)(-forward) }, { 0, 0, 1 }, 10, 120);
 
 	
 	//light(GL_LIGHT2, { (float)(-0.5 + sideMove), 1, (float)(-forward - 10) }, { 0, 0, -1 }, 10, 90);
