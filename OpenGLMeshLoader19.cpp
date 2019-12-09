@@ -200,6 +200,7 @@ void checkCrash(int coneNum, double x, double z) {
 		else {
 			barrierCounter++;
 			if (barrierCounter >= 5000) {
+				if(begin)
 				score++;
 				if (score == 30) {
 					forwardSpeed += 0.2;
@@ -995,6 +996,16 @@ void keyboardFunc(int key, int x, int y) {
 	}
 }
 
+void mouseFunc(int button, int state, int x, int y)
+{
+
+	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	{
+		fp = !fp;
+
+	}
+
+}
 
 void main(int argc, char** argv)
 {
@@ -1017,7 +1028,7 @@ void main(int argc, char** argv)
 
 	//glutMotionFunc(myMotion);
 
-	//glutMouseFunc(myMouse);
+	glutMouseFunc(mouseFunc);
 
 	glutReshapeFunc(myReshape);
 
